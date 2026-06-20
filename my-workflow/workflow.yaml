@@ -1,7 +1,7 @@
 staging-settings:
   user-workflow:
-    workflow-name: "cre-workflow"
+    workflow-name: "my-workflow-staging"
   workflow-artifacts:
     workflow-path: "./main.ts"
-    config-path: "./config.json"
+    config-path: "./config.staging.json"
     secrets-path: "../secrets.yaml"

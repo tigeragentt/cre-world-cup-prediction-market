@@ -6,6 +6,7 @@ import {
   Runner,
   getNetwork,
   bytesToHex,
+  hexToBase64,
   type EVMLog,
   consensusIdenticalAggregation,
   json,
@@ -34,7 +35,10 @@ const eventAbi = parseAbi([
   "event SettlementRequested(uint256 indexed marketId, uint256 indexed externalMatchId)",
 ]);
 // keccak256 topic for SettlementRequested(uint256,uint256)
-const eventSignature = "SettlementRequested(uint256,uint256)";
+const SETTLEMENT_REQUESTED_SIGNATURE = "SettlementRequested(uint256,uint256)";
+// Precomputed event topic hash — shared by the log-trigger registration (initWorkflow)
+// and the debug logging in the handler so both reference the exact same value.
+const SETTLEMENT_REQUESTED_TOPIC = keccak256(toHex(SETTLEMENT_REQUESTED_SIGNATURE));
 
 // football-data.org score.winner → Solidity Outcome enum value
 const WINNER_TO_OUTCOME: Record<string, number> = {
@@ -48,6 +52,16 @@ const WINNER_TO_OUTCOME: Record<string, number> = {
  *********************************/
 
 const onSettlementRequested = (runtime: Runtime<Config>, log: EVMLog): string => {
+  
+  runtime.log("onSettlementRequested");
+  // Debug: surface the trigger binding at execution time. evmClient targets the chain
+  // named in config; eventHash is the topic filter; marketAddress is the contract watched.
+  // (These are built in initWorkflow, which has no runtime — so they are logged here.)
+  runtime.log(`evmClient target chain: ${runtime.config.chainSelectorName}`);  
+  runtime.log(`marketAddress (configured): ${runtime.config.marketAddress}`);
+  runtime.log(`eventHash (topic): ${SETTLEMENT_REQUESTED_TOPIC}`);
+  runtime.log(`emitting contract (log.address): ${bytesToHex(log.address)}`);
+
   // 1. Decode SettlementRequested event
   const topics = log.topics.map((t) => bytesToHex(t)) as [`0x${string}`, ...`0x${string}`[]];
   const data = bytesToHex(log.data);
@@ -60,7 +74,7 @@ const onSettlementRequested = (runtime: Runtime<Config>, log: EVMLog): string =>
 
   // 2. Fetch match result from football-data.org (free tier, requires X-Auth-Token header)
   // Register a free key at https://www.football-data.org/client/register
-  const apiKey = runtime.getSecret({ id: "FOOTBALL_API_KEY_VAR" }).result().value;
+  const apiKey = runtime.getSecret({ id: "FOOTBALL_API_KEY" }).result().value;
   const httpClient = new cre.capabilities.HTTPClient();
 
   // The HTTP capability runs in node mode. Fetch + decode the outcome inside the node
@@ -139,14 +153,17 @@ const initWorkflow = (config: Config) => {
   if (!network) throw new Error(`Network not found: ${config.chainSelectorName}`);
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector);
-  const settlementRequestedTopic = keccak256(toHex(eventSignature));
-
+  const eventHash = SETTLEMENT_REQUESTED_TOPIC;
+  
+  // old addresses: [config.marketAddress],
+  // bootcamp addresses: [hexToBase64(config.evms[0].marketAddress as `0x${string}`)],
+  // On Production, use confidence: "CONFIDENCE_LEVEL_FINALIZED",
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.marketAddress],
-        topics: [{ values: [settlementRequestedTopic] }],
-        confidence: "CONFIDENCE_LEVEL_FINALIZED",
+        addresses: [hexToBase64(config.marketAddress as `0x${string}`)],
+        topics: [{ values: [hexToBase64(eventHash)] }],
+        confidence: "CONFIDENCE_LEVEL_LATEST",
       }),
       onSettlementRequested
     ),
@@ -159,6 +176,7 @@ const initWorkflow = (config: Config) => {
 
 export async function main() {
   const runner = await Runner.newRunner<Config, ConfigInput>({ configSchema });
+  //const runner = await Runner.newRunner({ configSchema });
   await runner.run(initWorkflow);
 }
 

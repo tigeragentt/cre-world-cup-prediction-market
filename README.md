@@ -168,7 +168,7 @@ updateTestMode(true)   // onlyOwner — re-enable testing
    - Environment: **Browser Extension**, **Metamask** (MetaMask on Sepolia)
    - Contract: `WorldCupPredictionMarket`
    - Constructor args:
-     - `forwarderAddress`: for CRE simulationon Ethereum Sepolia, use `0x15fc6ae953e024d975e77382eeec56a9101f9f88`
+     - `forwarderAddress`: for CRE simulation on Ethereum Sepolia, use `0x15fc6ae953e024d975e77382eeec56a9101f9f88`
 6. Click **Deploy** and confirm in MetaMask
 7. Copy the deployed contract address
 
@@ -206,7 +206,7 @@ Register at https://www.football-data.org/client/register
 - 2. Copy `.env.example` to `.env`
 
 - 3. Update the variables
-- FOOTBALL_API_KEY_SECRET
+- FOOTBALL_API_KEY
 - CRE_ETH_PRIVATE_KEY
 
 - 4. Update `cre-workflow/config.json`
@@ -309,11 +309,15 @@ Then call `createMarket` on the deployed contract:
 
 ### CRE Simulation to Settle the Market
 
+Run the workflow simulate with the `--broadcast` option to settle the market onchain.
+
 From the project root (`world-cup-prediction-market/`), run:
 
 ```bash
-cre workflow simulate cre-workflow --target staging-settings
+cre workflow simulate cre-workflow --target staging-settings --broadcast
 ```
+
+
 
 It will wait the next log transaction. If you already have a transaction hash, restart with:
 

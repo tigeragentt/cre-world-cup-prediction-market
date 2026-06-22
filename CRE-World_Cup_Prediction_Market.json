@@ -1,115 +1,177 @@
 {
   "version": 1,
   "workflow": {
-    "name": "World Cup Prediction Market Settlement",
+    "name": "World Cup Prediction Market",
     "description": "Listens for SettlementRequested events on WorldCupPredictionMarket, fetches the match result from football-data.org, and settles the market on-chain via CRE.",
-    "created": false
+    "created": true
   },
   "nodes": [
     {
-      "id": "node-1",
+      "id": "sc_1781994960446_0",
       "type": "appNode",
-      "position": { "x": 420, "y": 50 },
+      "position": {
+        "x": 16.251078533132613,
+        "y": 321.20414849704025
+      },
       "data": {
         "kind": "smartContract",
         "name": "WorldCupPredictionMarket",
+        "description": "Smart Contract reference",
         "contractName": "WorldCupPredictionMarket",
         "events": [
-          "SettlementRequested(uint256 indexed marketId, uint256 indexed externalMatchId)"
+          "SettlementRequested"
         ],
         "functions": [
-          "onReport(bytes report)"
+          "onReport"
         ]
-      }
+      },
+      "width": 240,
+      "height": 127,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 16.251078533132613,
+        "y": 321.20414849704025
+      },
+      "dragging": false
     },
     {
-      "id": "node-2",
+      "id": "trg_1781994960446_1",
       "type": "appNode",
-      "position": { "x": 50, "y": 280 },
+      "position": {
+        "x": -283.9159457038365,
+        "y": -121.35589860339812
+      },
       "data": {
         "kind": "trigger.evmLog",
-        "name": "Settlement Requested",
+        "name": "SettlementRequested",
         "description": "Fires when requestSettlement() is called after the settledAfter timestamp",
         "smartContractName": "WorldCupPredictionMarket",
         "eventName": "SettlementRequested",
-        "contractAddress": "",
         "chainSelector": "ethereum-testnet-sepolia",
         "confidenceLevel": "Finalized"
-      }
+      },
+      "width": 240,
+      "height": 149,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -283.9159457038365,
+        "y": -121.35589860339812
+      },
+      "dragging": false
     },
     {
-      "id": "node-3",
+      "id": "web_1781995216501_3",
       "type": "appNode",
-      "position": { "x": 420, "y": 280 },
-      "data": {
-        "kind": "cap.http.get",
-        "name": "Fetch Match Result",
-        "description": "GET match status and score.winner from football-data.org free API using externalMatchId",
-        "websiteName": "football-data.org",
-        "apiUrl": "https://api.football-data.org/v4/matches/{externalMatchId}"
-      }
-    },
-    {
-      "id": "node-4",
-      "type": "appNode",
-      "position": { "x": 800, "y": 280 },
-      "data": {
-        "kind": "cap.evmWrite",
-        "name": "Settle Market",
-        "description": "Submit encoded (marketId, outcome) to WorldCupPredictionMarket via CRE forwarder -> onReport()",
-        "smartContractName": "WorldCupPredictionMarket",
-        "functionName": "onReport",
-        "contractAddress": "",
-        "chainSelector": "ethereum-testnet-sepolia"
-      }
-    },
-    {
-      "id": "node-5",
-      "type": "appNode",
-      "position": { "x": 420, "y": 520 },
+      "position": {
+        "x": 16.084054296163515,
+        "y": 28.644101396601883
+      },
       "data": {
         "kind": "website",
-        "name": "football-data.org",
-        "websiteName": "football-data.org",
+        "name": "https://www.football-data.org/",
+        "description": "Website API reference",
+        "websiteName": "https://www.football-data.org/",
         "apiUrls": [
-          "https://api.football-data.org/v4/matches/{id}",
-          "https://api.football-data.org/v4/competitions/WC/matches"
+          "https://api.football-data.org/v4/matches/"
         ]
-      }
+      },
+      "width": 240,
+      "height": 142
+    },
+    {
+      "id": "cap_1781995216501_4",
+      "type": "appNode",
+      "position": {
+        "x": 16.084054296163515,
+        "y": -121.35589860339812
+      },
+      "data": {
+        "kind": "cap.http.get",
+        "name": "https://www.football-data.org/",
+        "description": "GET match status and score.winner from football-data.org free API using externalMatchId",
+        "websiteName": "https://www.football-data.org/",
+        "apiUrl": "https://api.football-data.org/v4/matches/"
+      },
+      "width": 240,
+      "height": 120
+    },
+    {
+      "id": "cap_1781995437525_7",
+      "type": "appNode",
+      "position": {
+        "x": 316.0840542961635,
+        "y": -121.35589860339812
+      },
+      "data": {
+        "kind": "cap.evmWrite",
+        "name": "onReport",
+        "description": "Submit encoded (marketId, outcome) to WorldCupPredictionMarket via CRE forwarder -> onReport(), which will call the function _settle",
+        "smartContractName": "WorldCupPredictionMarket",
+        "functionName": "onReport",
+        "chainSelector": "ethereum-testnet-sepolia"
+      },
+      "width": 240,
+      "height": 127
     }
   ],
   "edges": [
     {
-      "id": "edge-1",
-      "source": "node-2",
-      "target": "node-3",
-      "data": { "kind": "callback" }
+      "id": "e_1781994960446_2",
+      "source": "trg_1781994960446_1",
+      "target": "sc_1781994960446_0",
+      "sourceHandle": "refSource",
+      "targetHandle": "refTarget",
+      "type": "straight",
+      "data": {
+        "kind": "ref"
+      },
+      "className": "edge edge--ref"
     },
     {
-      "id": "edge-2",
-      "source": "node-3",
-      "target": "node-4",
-      "data": { "kind": "callback" }
+      "id": "e_1781995216501_5",
+      "source": "trg_1781994960446_1",
+      "target": "cap_1781995216501_4",
+      "type": "smoothstep",
+      "data": {
+        "kind": "callback"
+      },
+      "className": "edge edge--callback"
     },
     {
-      "id": "edge-3",
-      "source": "node-2",
-      "target": "node-1",
-      "data": { "kind": "ref" }
+      "id": "e_1781995216501_6",
+      "source": "cap_1781995216501_4",
+      "target": "web_1781995216501_3",
+      "sourceHandle": "refSource",
+      "targetHandle": "refTarget",
+      "type": "straight",
+      "data": {
+        "kind": "ref"
+      },
+      "className": "edge edge--ref"
     },
     {
-      "id": "edge-4",
-      "source": "node-4",
-      "target": "node-1",
-      "data": { "kind": "ref" }
+      "id": "e_1781995437525_8",
+      "source": "cap_1781995216501_4",
+      "target": "cap_1781995437525_7",
+      "type": "smoothstep",
+      "data": {
+        "kind": "callback"
+      },
+      "className": "edge edge--callback"
     },
     {
-      "id": "edge-5",
-      "source": "node-3",
-      "target": "node-5",
-      "data": { "kind": "ref" }
+      "id": "e_1781995437525_9",
+      "source": "cap_1781995437525_7",
+      "target": "sc_1781994960446_0",
+      "sourceHandle": "refSource",
+      "targetHandle": "refTarget",
+      "type": "straight",
+      "data": {
+        "kind": "ref"
+      },
+      "className": "edge edge--ref"
     }
   ],
-  "selectedId": null,
-  "idCounter": 5
+  "selectedId": "sc_1781994960446_0",
+  "idCounter": 10
 }

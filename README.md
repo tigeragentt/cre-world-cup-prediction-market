@@ -63,11 +63,11 @@ The file `CRE-world-cup-prediction-market.json` can be imported at [Scaffold CRE
 world-cup-prediction-market/
 ├── contracts/
 │   └── WorldCupPredictionMarket.sol   Solidity prediction market contract
-├── cre-workflow/                      CRE workflow (TypeScript)
+├── my-workflow/                       CRE workflow (TypeScript)
 │   ├── main.ts                        EVM log trigger + settlement handler
 │   ├── evm.ts                         On-chain write via CRE forwarder
 │   ├── types.ts                       Config schema + API types
-│   ├── config.json                    Chain selector + contract address
+│   ├── config.staging.json            Chain selector + contract address
 │   ├── workflow.yaml                  CRE targets (staging)
 │   └── package.json
 ├── frontend/                          Vite + React frontend (viem)
@@ -102,9 +102,9 @@ world-cup-prediction-market/
 ### Outcome enum
 | Value | Meaning |
 |---|---|
-| 1 | Team 1 Win (home) |
+| 1 | Team 1 Win |
 | 2 | Draw |
-| 3 | Team 2 Win (away) |
+| 3 | Team 2 Win |
 | 4 | Cancelled / postponed |
 
 ### Key rules
@@ -175,7 +175,7 @@ updateTestMode(true)   // onlyOwner — re-enable testing
 
 The constructor sets the Chainlink Forwarder address for security
 - param _forwarderAddress: The address of the Chainlink KeystoneForwarder contract
-- For Ethereum Sepolia testnet, use the `MockKeystoneForwarder`: 0x15fc6ae953e024d975e77382eeec56a9101f9f88
+- For Ethereum Sepolia testnet, use the `MockKeystoneForwarder`: `0x15fc6ae953e024d975e77382eeec56a9101f9f88`
 
 ---
 
@@ -209,7 +209,7 @@ Register at https://www.football-data.org/client/register
 - FOOTBALL_API_KEY
 - CRE_ETH_PRIVATE_KEY
 
-- 4. Update `cre-workflow/config.json`
+- 4. Update `my-workflow/config.staging.json`
 ```json
 {
   "chainSelectorName": "ethereum-testnet-sepolia",
@@ -222,7 +222,7 @@ Register at https://www.football-data.org/client/register
 Run from the **project root directory**:
 
 ```bash
-bun install --cwd ./cre-workflow
+bun install --cwd ./my-workflow
 ```
 
 ---
@@ -301,8 +301,8 @@ curl -H "X-Auth-Token: YOUR_KEY" \
 
 Then call `createMarket` on the deployed contract:
 - `externalMatchId`: the numeric match ID from football-data.org
-- `team1`: home team name
-- `team2`: away team name
+- `team1`: Team 1 name
+- `team2`: Team 2 name
 - `kickoff`: match start Unix timestamp — betting closes here
 - `settledAfter`: kickoff + ~10800 (3 hours, expected finish) — for an **already-finished** match,
   use a past timestamp so settlement can be requested immediately (or just leave `testMode` on)
@@ -314,7 +314,7 @@ Run the workflow simulate with the `--broadcast` option to settle the market onc
 From the project root (`world-cup-prediction-market/`), run:
 
 ```bash
-cre workflow simulate cre-workflow --target staging-settings --broadcast
+cre workflow simulate my-workflow --target staging-settings --broadcast
 ```
 
 
@@ -322,13 +322,13 @@ cre workflow simulate cre-workflow --target staging-settings --broadcast
 It will wait the next log transaction. If you already have a transaction hash, restart with:
 
 ```bash
-  cre workflow simulate cre-workflow --evm-tx-hash 0x... --evm-event-index 0
+  cre workflow simulate my-workflow --evm-tx-hash 0x... --evm-event-index 0
 ```
 
 Example:
 
 ```bash
-  cre workflow simulate cre-workflow --evm-tx-hash 0xb31890d748f5b0a67f48db77a50cc79fa52f321d38ec61cadccf2538d753a08a --evm-event-index 0
+  cre workflow simulate my-workflow --evm-tx-hash 0xb31890d748f5b0a67f48db77a50cc79fa52f321d38ec61cadccf2538d753a08a --evm-event-index 0
 ```
 
 

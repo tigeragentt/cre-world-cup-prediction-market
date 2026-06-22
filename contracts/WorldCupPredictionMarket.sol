@@ -24,7 +24,7 @@ contract WorldCupPredictionMarket is ReceiverTemplate {
 
     // ========== ENUMS ==========
 
-    /// @notice Match outcome: Team1Win (home), Draw, Team2Win (away), or Cancelled.
+    /// @notice Match outcome: Team1Win, Draw, Team2Win, or Cancelled.
     enum Outcome { None, Team1Win, Draw, Team2Win, Cancelled }
 
     enum Status { Open, SettlementRequested, Settled }
@@ -50,8 +50,8 @@ contract WorldCupPredictionMarket is ReceiverTemplate {
 
     struct Market {
         uint256 externalMatchId; // football-data.org match ID
-        string team1;            // home team
-        string team2;            // away team
+        string team1;            // Team 1
+        string team2;            // Team 2
         uint256 kickoff;         // match start unix ts — betting closes here
         uint256 settledAfter;    // match finish unix ts — settlement can be requested after this
         Status status;
@@ -94,8 +94,8 @@ contract WorldCupPredictionMarket is ReceiverTemplate {
 
     /// @notice Create a market for a match. One market per match.
     /// @param externalMatchId football-data.org numeric match ID.
-    /// @param team1 Home team name.
-    /// @param team2 Away team name.
+    /// @param team1 Team 1 name.
+    /// @param team2 Team 2 name.
     /// @param kickoff Unix timestamp of match start. Betting closes at this time.
     /// @param settledAfter Unix timestamp the match should be finished. Settlement can be
     ///        requested after this. Set to kickoff + expected match duration (e.g. ~3 hours).

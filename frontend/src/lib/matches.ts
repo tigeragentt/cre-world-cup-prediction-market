@@ -1,9 +1,28 @@
 import { useEffect, useState } from "react";
 
-// Settlement can be requested once the match should be finished: kickoff + this many
-// seconds. 3h covers 90' + halftime + stoppage, plus extra time / penalties for knockout
-// games and a margin for the result feed to update. Bump to 4h if knockout settles too early.
-const MATCH_DURATION = 3 * 60 * 60; // 10800s
+// ─────────────────────────────────────────────────────────────────────────────
+// Config — tweak these to change what the "Create Markets" panel lists.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** How many upcoming (future kickoff) matches to list. */
+export const UPCOMING_MATCHES_LIMIT = 5;
+
+/** How many recent finished matches to list (handy for settlement testing). */
+export const RECENT_MATCHES_LIMIT = 3;
+
+/** football-data.org competition code (WC = FIFA World Cup). */
+export const COMPETITION_CODE = "WC";
+
+/**
+ * Hours after kickoff when settlement opens (`settledAfter = kickoff + this`).
+ * 3h covers 90' + halftime + stoppage, plus extra time / penalties for knockout
+ * games and a margin for the result feed. Bump to 4 if knockout settles too early.
+ */
+export const MATCH_DURATION_HOURS = 3;
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+const MATCH_DURATION = MATCH_DURATION_HOURS * 60 * 60; // seconds
 
 export interface MatchInfo {
   id: number;
@@ -48,8 +67,11 @@ export interface MatchLists {
  * Fetch World Cup matches via the dev proxy (/api/football → football-data.org, which injects
  * the X-Auth-Token header from FOOTBALL_API_KEY) and split into upcoming and recent-finished.
  */
-export async function fetchMatches(upcomingLimit = 5, recentLimit = 3): Promise<MatchLists> {
-  const res = await fetch("/api/football/competitions/WC/matches");
+export async function fetchMatches(
+  upcomingLimit = UPCOMING_MATCHES_LIMIT,
+  recentLimit = RECENT_MATCHES_LIMIT,
+): Promise<MatchLists> {
+  const res = await fetch(`/api/football/competitions/${COMPETITION_CODE}/matches`);
   if (!res.ok) {
     throw new Error(
       `football-data.org returned ${res.status}. Is FOOTBALL_API_KEY set in .env?`
@@ -73,7 +95,10 @@ export async function fetchMatches(upcomingLimit = 5, recentLimit = 3): Promise<
   return { upcoming, recent };
 }
 
-export function useMatches(upcomingLimit = 5, recentLimit = 3) {
+export function useMatches(
+  upcomingLimit = UPCOMING_MATCHES_LIMIT,
+  recentLimit = RECENT_MATCHES_LIMIT,
+) {
   const [data, setData] = useState<MatchLists>({ upcoming: [], recent: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

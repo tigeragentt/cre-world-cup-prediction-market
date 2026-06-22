@@ -75,7 +75,8 @@ export function MatchMarkets({ onMarketCreated }: { onMarketCreated?: () => void
   });
   const isOwner = !!address && !!owner && address.toLowerCase() === owner.toLowerCase();
 
-  const { upcoming, recent, isLoading, error } = useMatches(5, 3);
+  // Counts are configured in lib/matches.ts (UPCOMING_MATCHES_LIMIT / RECENT_MATCHES_LIMIT).
+  const { upcoming, recent, isLoading, error } = useMatches();
 
   // Filter out matches that already have a market — they show in the markets grid above.
   const allIds = [...recent, ...upcoming].map((m) => m.id);

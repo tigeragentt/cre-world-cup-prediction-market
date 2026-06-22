@@ -2,9 +2,9 @@ import { useState } from "react";
 import { formatEther } from "viem";
 import { Link, useParams } from "react-router-dom";
 import { useRead, useWrite } from "@/lib/hooks";
-import { useWallet } from "@/lib/wallet";
+import { useWallet, useNetwork } from "@/lib/wallet";
 import {
-  CONTRACT_ADDRESS, MARKET_ABI,
+  MARKET_ABI,
   STATUS_LABEL, STATUS_COLOR, OUTCOME_LABEL,
 } from "@/lib/contract";
 import { PlaceBetModal } from "@/components/PlaceBetModal";
@@ -58,19 +58,20 @@ export function MarketPage() {
   const { id } = useParams<{ id: string }>();
   const marketId = BigInt(id ?? "0");
   const { address, walletClient, isConnected } = useWallet();
+  const { contractAddress } = useNetwork();
   const [showBetModal, setShowBetModal] = useState(false);
 
   const { data: market, isLoading, refetch: refetchMarket } = useRead<Market>({
-    address: CONTRACT_ADDRESS, abi: MARKET_ABI, functionName: "getMarket", args: [marketId],
+    address: contractAddress, abi: MARKET_ABI, functionName: "getMarket", args: [marketId],
   }, [id]);
 
   const { data: prediction, refetch: refetchPrediction } = useRead<Prediction>({
-    address: CONTRACT_ADDRESS, abi: MARKET_ABI, functionName: "getPrediction",
+    address: contractAddress, abi: MARKET_ABI, functionName: "getPrediction",
     args: [marketId, address!], enabled: !!address,
   }, [id, address ?? ""]);
 
   const { data: testMode } = useRead<boolean>({
-    address: CONTRACT_ADDRESS, abi: MARKET_ABI, functionName: "testMode", args: [],
+    address: contractAddress, abi: MARKET_ABI, functionName: "testMode", args: [],
   }, []);
 
   const settle = useWrite(walletClient);
@@ -187,7 +188,7 @@ export function MarketPage() {
 
           {canSettle && (
             <button
-              onClick={() => settle.write({ address: CONTRACT_ADDRESS, abi: MARKET_ABI, functionName: "requestSettlement", args: [marketId] })}
+              onClick={() => settle.write({ address: contractAddress, abi: MARKET_ABI, functionName: "requestSettlement", args: [marketId] })}
               disabled={isBusy}
               className="btn btn-warning btn-block btn-lg"
             >
@@ -203,7 +204,7 @@ export function MarketPage() {
 
           {settled && outcome !== 4 && hasPrediction && prediction!.pred === outcome && !prediction!.claimed && (
             <button
-              onClick={() => claim.write({ address: CONTRACT_ADDRESS, abi: MARKET_ABI, functionName: "claimPrediction", args: [marketId] })}
+              onClick={() => claim.write({ address: contractAddress, abi: MARKET_ABI, functionName: "claimPrediction", args: [marketId] })}
               disabled={isBusy}
               className="btn btn-primary btn-block btn-lg"
             >
@@ -213,7 +214,7 @@ export function MarketPage() {
 
           {settled && outcome === 4 && hasPrediction && !prediction!.claimed && (
             <button
-              onClick={() => claim.write({ address: CONTRACT_ADDRESS, abi: MARKET_ABI, functionName: "refundPrediction", args: [marketId] })}
+              onClick={() => claim.write({ address: contractAddress, abi: MARKET_ABI, functionName: "refundPrediction", args: [marketId] })}
               disabled={isBusy}
               className="btn btn-secondary btn-block"
             >

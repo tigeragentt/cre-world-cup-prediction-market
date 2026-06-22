@@ -1,14 +1,15 @@
 import { useRead } from "@/lib/hooks";
-import { useWallet } from "@/lib/wallet";
-import { CONTRACT_ADDRESS, MARKET_ABI } from "@/lib/contract";
+import { useWallet, useNetwork } from "@/lib/wallet";
+import { MARKET_ABI } from "@/lib/contract";
 import { MarketCard } from "@/components/MarketCard";
 import { MatchMarkets } from "@/components/MatchMarkets";
 
 export function HomePage() {
   const { isConnected } = useWallet();
+  const { contractAddress } = useNetwork();
 
   const { data: nextMarketId, isLoading, refetch } = useRead<bigint>({
-    address: CONTRACT_ADDRESS,
+    address: contractAddress,
     abi: MARKET_ABI,
     functionName: "nextMarketId",
   });

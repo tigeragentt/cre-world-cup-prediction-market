@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { parseEther, formatEther, type WalletClient } from "viem";
 import { useBalance, useWrite } from "@/lib/hooks";
-import { CONTRACT_ADDRESS, MARKET_ABI } from "@/lib/contract";
+import { useNetwork } from "@/lib/wallet";
+import { MARKET_ABI } from "@/lib/contract";
 
 const OUTCOMES = [1, 2, 3];
 
@@ -18,6 +19,7 @@ interface PlaceBetModalProps {
 export function PlaceBetModal({
   marketId, team1, team2, address, walletClient, onClose, onSuccess,
 }: PlaceBetModalProps) {
+  const { contractAddress } = useNetwork();
   const [selectedOutcome, setSelectedOutcome] = useState<number | null>(null);
   const [amount, setAmount] = useState("");
 
@@ -36,7 +38,7 @@ export function PlaceBetModal({
   const handleBet = () => {
     if (selectedOutcome === null || parsedAmount === 0n) return;
     bet.write({
-      address: CONTRACT_ADDRESS,
+      address: contractAddress,
       abi: MARKET_ABI,
       functionName: "makePrediction",
       args: [marketId, selectedOutcome],

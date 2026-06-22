@@ -177,6 +177,9 @@ The constructor sets the Chainlink Forwarder address for security
 - param _forwarderAddress: The address of the Chainlink KeystoneForwarder contract
 - For Ethereum Sepolia testnet, use the `MockKeystoneForwarder`: `0x15fc6ae953e024d975e77382eeec56a9101f9f88`
 
+Look up the `MockKeystoneForwarder` address for any network in the Chainlink forwarder directory:
+https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-ts
+
 ---
 
 ## CRE Workflow
@@ -243,13 +246,34 @@ npm run dev
 
 ### `.env`
 ```
+# Ethereum Sepolia (default network)
 CONTRACT_ADDRESS=0x...
 RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
+
+# Base Sepolia (optional — only needed to use Base)
+CONTRACT_ADDRESS_BASE=0x...
+RPC_URL_BASE=https://base-sepolia-rpc.publicnode.com
+
 FOOTBALL_API_KEY=your_football_data_api_key
 ```
 
 `FOOTBALL_API_KEY` is used by the Vite dev proxy (`/api/football` → football-data.org) to list
 matches in the UI — it stays server-side and is never exposed in the client bundle.
+
+### Multi-chain (Ethereum Sepolia + Base Sepolia)
+
+The app **defaults to Ethereum Sepolia**. When a wallet connects, it reads the wallet's chain id
+and automatically switches the active network:
+
+| Wallet chain | Active network | Contract / RPC used |
+|---|---|---|
+| Ethereum Sepolia (`11155111`) | Ethereum Sepolia | `CONTRACT_ADDRESS` / `RPC_URL` |
+| Base Sepolia (`84532`) | Base Sepolia | `CONTRACT_ADDRESS_BASE` / `RPC_URL_BASE` |
+| anything else | — | header shows **Wrong network** with one-click switch buttons |
+
+The active network is shown as a badge in the header. Switching the network in MetaMask updates
+the app live (reads, balances, and writes all re-target the selected chain). The supported
+networks are defined in `src/lib/chains.ts` — add another entry there to support more chains.
 
 ### Pages
 
@@ -345,4 +369,46 @@ from the `requestSettlement()` call — you'll need it for the CRE simulation ab
 > If the CRE workflow can't fetch a result (API down, match not finished, or no winner), it
 > **skips settlement** and the market stays `Open` — just click **Request Settlement** again
 > once the result is available. See [CRE Workflow](#cre-workflow).
+
+---
+
+## Running on Base Sepolia
+
+The project ships a second CRE target so you can run the same workflow on **Ethereum Base
+Sepolia** (chain ID `84532`) instead of Ethereum Sepolia. It uses a separate config file and a
+separate settings block — the Ethereum Sepolia setup is left untouched.
+
+| Item | Ethereum Sepolia | Base Sepolia |
+|---|---|---|
+| Config file | `my-workflow/config.staging.json` | `my-workflow/config.staging.base.json` |
+| `workflow.yaml` block | `staging-settings` | `staging-base-settings` |
+| `chainSelectorName` | `ethereum-testnet-sepolia` | `ethereum-testnet-sepolia-base-1` |
+
+### Setup
+
+1. **Deploy the contract on Base Sepolia.** Follow the same [Deployment](#deployment) steps,
+   but with MetaMask on **Base Sepolia** and the Base Sepolia Chainlink Forwarder address for
+   the `forwarderAddress` constructor arg. Copy the new deployed address.
+
+   For CRE simulation on Base Sepolia, use the `MockKeystoneForwarder`:
+   `0x82300bd7c3958625581cc2f77bc6464dcecdf3e5`
+   ([forwarder directory](https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-ts)).
+
+2. **Update `my-workflow/config.staging.base.json`** with that address:
+   ```json
+   {
+     "chainSelectorName": "ethereum-testnet-sepolia-base-1",
+     "marketAddress": "0xYOUR_BASE_SEPOLIA_CONTRACT",
+     "gasLimit": 500000
+   }
+   ```
+
+3. **Simulate against the Base target** — same command as the Ethereum Sepolia flow, but point
+   `--target` at the Base block. From the project root (`world-cup-prediction-market/`):
+   ```bash
+   cre workflow simulate my-workflow --target staging-base-settings --broadcast
+   ```
+
+Everything else — the `--evm-tx-hash` / `--evm-event-index` retry options, secrets, and the
+football-data.org API key — works exactly as in the Ethereum Sepolia flow above.
 

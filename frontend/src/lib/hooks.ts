@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { type Abi, type WalletClient } from "viem";
-import { publicClient } from "./client";
-import { CONTRACT_ADDRESS, MARKET_ABI } from "./contract";
+import { useNetwork } from "./wallet";
+import { MARKET_ABI } from "./contract";
 
 // ─── Read ────────────────────────────────────────────────────────────────────
 
@@ -14,6 +14,7 @@ interface ReadConfig {
 }
 
 export function useRead<T>(config: ReadConfig, deps: unknown[] = []) {
+  const { publicClient, network } = useNetwork();
   const [data, setData] = useState<T | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(config.enabled !== false);
   const [error, setError] = useState<Error | null>(null);
@@ -35,7 +36,7 @@ export function useRead<T>(config: ReadConfig, deps: unknown[] = []) {
       setIsLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config.enabled, config.address, config.functionName, ...deps]);
+  }, [config.enabled, config.address, config.functionName, network.chainId, ...deps]);
 
   useEffect(() => { fetch(); }, [fetch]);
 
@@ -46,9 +47,10 @@ export function useRead<T>(config: ReadConfig, deps: unknown[] = []) {
 
 /** Returns a map of externalMatchId → whether a market already exists for it. */
 export function useHasMarkets(ids: number[]) {
+  const { publicClient, network, contractAddress } = useNetwork();
   const [map, setMap] = useState<Record<number, boolean>>({});
   const [isLoading, setIsLoading] = useState(ids.length > 0);
-  const key = ids.join(",");
+  const key = `${network.chainId}:${ids.join(",")}`;
 
   const fetch = useCallback(async () => {
     if (ids.length === 0) { setMap({}); setIsLoading(false); return; }
@@ -57,7 +59,7 @@ export function useHasMarkets(ids: number[]) {
       const results = await publicClient.multicall({
         allowFailure: true,
         contracts: ids.map((id) => ({
-          address: CONTRACT_ADDRESS,
+          address: contractAddress,
           abi: MARKET_ABI as Abi,
           functionName: "matchHasMarket",
           args: [BigInt(id)],
@@ -88,6 +90,7 @@ export function useHasMarkets(ids: number[]) {
 // ─── Balance ─────────────────────────────────────────────────────────────────
 
 export function useBalance(address: `0x${string}` | null, deps: unknown[] = []) {
+  const { publicClient, network } = useNetwork();
   const [data, setData] = useState<bigint | undefined>(undefined);
 
   const fetch = useCallback(async () => {
@@ -95,7 +98,7 @@ export function useBalance(address: `0x${string}` | null, deps: unknown[] = []) 
     const result = await publicClient.getBalance({ address });
     setData(result);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address, ...deps]);
+  }, [address, network.chainId, ...deps]);
 
   useEffect(() => { fetch(); }, [fetch]);
 
@@ -113,6 +116,7 @@ interface WriteConfig {
 }
 
 export function useWrite(walletClient: WalletClient | null) {
+  const { publicClient } = useNetwork();
   const [isPending, setIsPending] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -143,7 +147,7 @@ export function useWrite(walletClient: WalletClient | null) {
         return false;
       }
     },
-    [walletClient]
+    [walletClient, publicClient]
   );
 
   return {

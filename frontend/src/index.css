@@ -78,6 +78,31 @@ button { font-family: inherit; cursor: pointer; }
 }
 .link-btn { background: none; border: none; font-size: 0.875rem; color: var(--gray-400); transition: color 0.15s; }
 .link-btn:hover { color: #fff; }
+.net-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--emerald-400);
+  background-color: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.net-badge-warn {
+  color: var(--yellow-300);
+  background-color: rgba(234, 179, 8, 0.15);
+  border-color: rgba(234, 179, 8, 0.35);
+}
+.net-warning {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--yellow-300);
+  background-color: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  border-radius: 0.5rem;
+}
 
 /* ─── Buttons ────────────────────────────────────────────── */
 .btn {

@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { formatEther } from "viem";
 import { useRead } from "@/lib/hooks";
-import { CONTRACT_ADDRESS, MARKET_ABI, STATUS_LABEL, STATUS_COLOR, OUTCOME_LABEL } from "@/lib/contract";
+import { useNetwork } from "@/lib/wallet";
+import { MARKET_ABI, STATUS_LABEL, STATUS_COLOR, OUTCOME_LABEL } from "@/lib/contract";
 
 function PoolBar({ totals, team1, team2 }: { totals: readonly bigint[]; team1: string; team2: string }) {
   const values = totals.map(Number);
@@ -25,18 +26,20 @@ function PoolBar({ totals, team1, team2 }: { totals: readonly bigint[]; team1: s
 }
 
 export function MarketCard({ marketId }: { marketId: bigint }) {
+  const { contractAddress } = useNetwork();
+
   const { data: market, isLoading } = useRead<{
     team1: string; team2: string; status: number; outcome: number;
     settledAfter: bigint; predTotals: readonly bigint[];
   }>({
-    address: CONTRACT_ADDRESS,
+    address: contractAddress,
     abi: MARKET_ABI,
     functionName: "getMarket",
     args: [marketId],
   }, [marketId.toString()]);
 
   const { data: testMode } = useRead<boolean>({
-    address: CONTRACT_ADDRESS,
+    address: contractAddress,
     abi: MARKET_ABI,
     functionName: "testMode",
     args: [],

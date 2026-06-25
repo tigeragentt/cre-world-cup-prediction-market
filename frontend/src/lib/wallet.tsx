@@ -129,6 +129,19 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     disconnectedRef.current = false;
+    // Ask MetaMask to (re)pick which account is connected. eth_requestAccounts
+    // alone just returns the account already permitted for the site, so after
+    // switching accounts in the wallet a reconnect would silently reuse the
+    // old one. Requesting permissions forces the account picker.
+    try {
+      await window.ethereum.request({
+        method: "wallet_requestPermissions",
+        params: [{ eth_accounts: {} }],
+      });
+    } catch (err: any) {
+      if (err?.code === 4001) return; // user rejected the prompt
+      // Other errors (e.g. wallet doesn't support it) — fall back to sync().
+    }
     await sync(true);
   }, [sync]);
 

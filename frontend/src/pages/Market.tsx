@@ -84,6 +84,17 @@ export function MarketPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settle.isSuccess, claim.isSuccess]);
 
+  // While the market is waiting on Chainlink CRE (status 1), poll on-chain so
+  // the page flips to Settled automatically once the CRE nodes report back —
+  // without this the "Pending CRE" state sticks until a manual reload.
+  const pendingCre = market?.status === 1;
+  useEffect(() => {
+    if (!pendingCre) return;
+    const t = setInterval(() => { refetchMarket(); refetchPrediction(); }, 10000);
+    return () => clearInterval(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingCre]);
+
   if (isLoading) return (
     <div className="detail skeleton">
       <div className="skel-bar skel-h4 skel-w24" />

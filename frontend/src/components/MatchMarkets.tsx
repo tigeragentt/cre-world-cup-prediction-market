@@ -9,8 +9,8 @@ function formatKickoff(utc: string) {
 }
 
 function MatchRow({
-  match, isOwner, onCreated,
-}: { match: MatchInfo; isOwner: boolean; onCreated: () => void }) {
+  match, onCreated,
+}: { match: MatchInfo; onCreated: () => void }) {
   const { walletClient } = useWallet();
   const create = useWrite(walletClient);
 
@@ -33,13 +33,9 @@ function MatchRow({
         <p className="muted-xs">{formatKickoff(match.utcDate)}</p>
       </div>
 
-      {isOwner ? (
-        <button onClick={onCreate} disabled={create.isBusy} className="btn btn-primary btn-sm match-action">
-          {create.isBusy ? "Creating…" : "Create Market"}
-        </button>
-      ) : (
-        <span className="muted-xs match-action">Owner only</span>
-      )}
+      <button onClick={onCreate} disabled={create.isBusy} className="btn btn-primary btn-sm match-action">
+        {create.isBusy ? "Creating…" : "Create Market"}
+      </button>
 
       {create.error && <p className="field-error match-error">{create.error}</p>}
     </div>
@@ -47,9 +43,9 @@ function MatchRow({
 }
 
 function MatchSection({
-  title, hint, matches, isOwner, onCreated,
+  title, hint, matches, onCreated,
 }: {
-  title: string; hint?: string; matches: MatchInfo[]; isOwner: boolean; onCreated: () => void;
+  title: string; hint?: string; matches: MatchInfo[]; onCreated: () => void;
 }) {
   if (matches.length === 0) return null;
   return (
@@ -60,7 +56,7 @@ function MatchSection({
       </div>
       <div className="match-list">
         {matches.map((m) => (
-          <MatchRow key={m.id} match={m} isOwner={isOwner} onCreated={onCreated} />
+          <MatchRow key={m.id} match={m} onCreated={onCreated} />
         ))}
       </div>
     </div>
@@ -90,11 +86,14 @@ export function MatchMarkets({ onMarketCreated }: { onMarketCreated?: () => void
   const nothingToCreate =
     !isLoading && !error && creatableRecent.length === 0 && creatableUpcoming.length === 0;
 
+  // Only the contract owner can create markets — hide the whole block for
+  // everyone else (including before the wallet/owner data has loaded).
+  if (!isOwner) return null;
+
   return (
     <section className="panel create-panel">
       <div className="create-head">
         <h2 className="section-title">Create Markets</h2>
-        {!isOwner && <span className="muted-xs">Only the contract owner can create markets</span>}
       </div>
 
       {isLoading && <p className="muted">Loading matches…</p>}
@@ -105,13 +104,11 @@ export function MatchMarkets({ onMarketCreated }: { onMarketCreated?: () => void
         title="Recent results — settle right away"
         hint="settledAfter is in the past"
         matches={creatableRecent}
-        isOwner={isOwner}
         onCreated={onCreated}
       />
       <MatchSection
         title="Upcoming matches"
         matches={creatableUpcoming}
-        isOwner={isOwner}
         onCreated={onCreated}
       />
     </section>

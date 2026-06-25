@@ -50,6 +50,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   // silently re-connect the app until the user clicks Connect again.
   const disconnectedRef = useRef(false);
 
+  // The wrong chain we've already auto-prompted MetaMask to switch from, so
+  // we ask once per chain instead of re-firing if the user dismisses it.
+  const promptedChainRef = useRef<number | null>(null);
+
   const clear = useCallback(() => {
     setAddress(null);
     setWalletClient(null);
@@ -164,6 +168,23 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   const isConnected = !!address;
   const isWrongNetwork = isConnected && chainId !== null && chainId !== sepolia.id;
+
+  // Proactively ask MetaMask to switch when the user lands on the wrong
+  // network (same UX as the Chainlink LINK token contracts page). Asks once
+  // per wrong chain; resets once they're back on Sepolia so a later mistake
+  // prompts again.
+  useEffect(() => {
+    if (isWrongNetwork && chainId !== null) {
+      if (promptedChainRef.current !== chainId) {
+        promptedChainRef.current = chainId;
+        switchNetwork().catch(() => {
+          /* user dismissed; the Header button stays as a manual retry */
+        });
+      }
+    } else {
+      promptedChainRef.current = null;
+    }
+  }, [isWrongNetwork, chainId, switchNetwork]);
 
   return (
     <WalletContext.Provider

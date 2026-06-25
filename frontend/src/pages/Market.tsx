@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatEther } from "viem";
 import { Link, useParams } from "react-router-dom";
 import { useRead, useWrite } from "@/lib/hooks";
@@ -76,7 +76,13 @@ export function MarketPage() {
   const settle = useWrite(walletClient);
   const claim = useWrite(walletClient);
 
-  if (settle.isSuccess || claim.isSuccess) { refetchMarket(); refetchPrediction(); }
+  // Refresh on-chain state after a settle/claim succeeds. Must run in an
+  // effect — calling refetch during render triggers setState-in-render and
+  // an infinite loop that blanks the page.
+  useEffect(() => {
+    if (settle.isSuccess || claim.isSuccess) { refetchMarket(); refetchPrediction(); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settle.isSuccess, claim.isSuccess]);
 
   if (isLoading) return (
     <div className="detail skeleton">

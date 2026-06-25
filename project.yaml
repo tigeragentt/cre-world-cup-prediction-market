@@ -7,17 +7,7 @@ staging-settings:
     - chain-name: ethereum-testnet-sepolia
       url: https://ethereum-sepolia-rpc.publicnode.com
 
-# The MockKeystoneForwarder contract, that we will use for simulations,
-# on Ethereum Sepolia is located at:
-# https://sepolia.etherscan.io/address/0x15fc6ae953e024d975e77382eeec56a9101f9f88#code
+# The MockKeystoneForwarder contract, that we will use for simulations, 
+# on Ethereum Sepolia is located at: 
+# https://sepolia.etherscan.io/address/0x15fc6ae953e024d975e77382eeec56a9101f9f88#code 
 # forwarderAddress: "0x15fc6ae953e024d975e77382eeec56a9101f9f88"
-
-staging-base-settings:
-  rpcs:
-    - chain-name: ethereum-testnet-sepolia-base-1
-      url: https://base-sepolia-rpc.publicnode.com
-
-# The MockKeystoneForwarder contract, that we will use for simulations,
-# on Base Sepolia is located at:
-# https://sepolia.basescan.org/address/0x82300bd7c3958625581cc2f77bc6464dcecdf3e5#code
-# forwarderAddress: "0x82300bd7c3958625581cc2f77bc6464dcecdf3e5"

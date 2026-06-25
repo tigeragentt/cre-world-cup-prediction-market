@@ -1,5 +1,6 @@
-// The active contract address is network-aware — read it from `useNetwork()`
-// (see lib/chains.ts / lib/wallet.tsx), not from a static constant.
+export const CONTRACT_ADDRESS = (
+  import.meta.env.CONTRACT_ADDRESS ?? "0x0000000000000000000000000000000000000000"
+) as `0x${string}`;
 
 export const MARKET_ABI = [
   {

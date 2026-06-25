@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useMatches, type MatchInfo } from "@/lib/matches";
 import { useRead, useWrite, useHasMarkets } from "@/lib/hooks";
-import { useWallet, useNetwork } from "@/lib/wallet";
-import { MARKET_ABI } from "@/lib/contract";
+import { useWallet } from "@/lib/wallet";
+import { CONTRACT_ADDRESS, MARKET_ABI } from "@/lib/contract";
 
 function formatKickoff(utc: string) {
   return new Date(utc).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
@@ -12,7 +12,6 @@ function MatchRow({
   match, isOwner, onCreated,
 }: { match: MatchInfo; isOwner: boolean; onCreated: () => void }) {
   const { walletClient } = useWallet();
-  const { contractAddress } = useNetwork();
   const create = useWrite(walletClient);
 
   useEffect(() => {
@@ -21,7 +20,7 @@ function MatchRow({
   }, [create.isSuccess]);
 
   const onCreate = () => create.write({
-    address: contractAddress, abi: MARKET_ABI, functionName: "createMarket",
+    address: CONTRACT_ADDRESS, abi: MARKET_ABI, functionName: "createMarket",
     args: [BigInt(match.id), match.team1, match.team2, BigInt(match.kickoff), BigInt(match.settledAfter)],
   });
 
@@ -70,10 +69,9 @@ function MatchSection({
 
 export function MatchMarkets({ onMarketCreated }: { onMarketCreated?: () => void }) {
   const { address } = useWallet();
-  const { contractAddress } = useNetwork();
 
   const { data: owner } = useRead<`0x${string}`>({
-    address: contractAddress, abi: MARKET_ABI, functionName: "owner",
+    address: CONTRACT_ADDRESS, abi: MARKET_ABI, functionName: "owner",
   });
   const isOwner = !!address && !!owner && address.toLowerCase() === owner.toLowerCase();
 

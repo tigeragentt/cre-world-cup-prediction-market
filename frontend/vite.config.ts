@@ -11,9 +11,6 @@ export default defineConfig(({ mode }) => {
     define: {
       "import.meta.env.CONTRACT_ADDRESS": JSON.stringify(env.CONTRACT_ADDRESS),
       "import.meta.env.RPC_URL": JSON.stringify(env.RPC_URL),
-      // Base Sepolia (optional)
-      "import.meta.env.CONTRACT_ADDRESS_BASE": JSON.stringify(env.CONTRACT_ADDRESS_BASE),
-      "import.meta.env.RPC_URL_BASE": JSON.stringify(env.RPC_URL_BASE),
     },
     resolve: {
       alias: {

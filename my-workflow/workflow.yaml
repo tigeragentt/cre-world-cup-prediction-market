@@ -5,11 +5,3 @@ staging-settings:
     workflow-path: "./main.ts"
     config-path: "./config.staging.json"
     secrets-path: "../secrets.yaml"
-
-staging-base-settings:
-  user-workflow:
-    workflow-name: "my-workflow-staging-base"
-  workflow-artifacts:
-    workflow-path: "./main.ts"
-    config-path: "./config.staging.base.json"
-    secrets-path: "../secrets.yaml"

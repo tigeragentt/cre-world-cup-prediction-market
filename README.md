@@ -6,6 +6,21 @@ Users predict match outcomes (Team 1 Win / Draw / Team 2 Win) by staking Sepolia
 
 ---
 
+## Contents
+
+- [How It Works](#how-it-works)
+- [Scaffold CRE](#scaffold-cre)
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Project Structure](#project-structure)
+- [Contract](#contract)
+- [Deployment](#deployment)
+- [CRE Workflow](#cre-workflow)
+- [Frontend](#frontend)
+- [Simulate and Play](#simulate-and-play)
+
+---
+
 ## How It Works
 
 ```
